@@ -1,16 +1,12 @@
 defmodule Schema do
   use Absinthe.Schema
+  alias Wings.Resolver, as: Resolver
 
   import_types Schema.Types.User
   import_types Schema.Types.Article
   import_types Schema.Types.Comment
 
-  default_resolve fn
-    _, %{source: source, definition: %{name: name}} when is_map(source) ->
-      {:ok, Map.get(source, name)}
-    _, _ ->
-      {:ok, nil}
-  end
+  default_resolve &Schema.Util.resolve/2
 
   query do
     field :ping, :string do
@@ -18,30 +14,20 @@ defmodule Schema do
     end
 
     field :user, :user do
-      resolve fn _, _ ->
-        {:ok, %{id: "none", username: "cloudle"}}
-      end
+      resolve &Resolver.User.find/2
     end
 
     field :article, :article do
       arg :id, non_null(:string)
-      resolve fn %{id: id}, _ ->
-        result = DB.find_one "articles", %{}
-        {:ok, result}
-      end
+      resolve &Resolver.Article.find/2
     end
 
     field :articles, list_of(:article) do
-      resolve fn _, _ ->
-        results = DB.find("articles", %{})
-        {:ok, results}
-      end
+      resolve &Resolver.Article.find_many/2
     end
 
     field :comment, :comment do
-      resolve fn _, _ ->
-        {:ok, %{id: "11", comment: "This is just a comment"}}
-      end
+      resolve &Resolver.Comment.find/2
     end
   end
 
@@ -50,17 +36,7 @@ defmodule Schema do
       arg :_id, non_null(:string)
       arg :title, non_null(:string)
       arg :content, :string
-      resolve fn args, _ ->
-        instance = Map.put(args, :title, args[:title] <> "!")
-        DB.insert "articles", instance
-        res = %{"id" => instance[:_id], "title" => instance[:title], "content" => instance[:content]}
-        Process.sleep(1000)
-        IO.inspect args
-        {:ok, res}
-        #{:error, [%{"message" => "You're doing something wrong.."}]}
-      end
+      resolve &Resolver.Article.insert/2
     end
-
-
   end
 end
