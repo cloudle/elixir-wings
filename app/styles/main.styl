@@ -1,0 +1,104 @@
+@import "./variable"
+
+body
+  margin 0
+  background-color $backgroundColor
+
+.application-wrapper
+  max-width $maxWidth
+  margin 0 auto
+
+.heading-wrapper
+  display flex
+  min-height 72px
+  margin 5px 0 0 0
+
+  .site-logo
+    color white
+    width $leftPaneSize
+    text-transform uppercase
+    font-size 12px
+    font-weight 500
+    margin 10px 0 0 10px
+
+  .sidebar-toggler
+    width $rightPaneSize
+    text-align right
+
+  .site-title
+    user-select none; cursor pointer
+    flex 1; display flex
+    align-items center
+    justify-content center
+    text-transform uppercase
+    text-align center
+    font-size 30px
+    font-weight 300
+    color $mainColor
+    min-height 140px
+
+    .strong
+      font-weight 500
+
+.content-wrapper
+  display flex
+
+  .left.side-pane
+    width $leftPaneSize
+    background-color $mainColor
+    border-radius 2px
+    margin-top 40px
+
+  .right.side-pane
+    width $rightPaneSize
+    border-radius 2px
+    background-color $rightPaneGray
+    margin-top 20px
+
+  .page-content
+    flex 1; background-color white
+    margin 0 5px
+    border-radius 2px
+    min-height 500px
+
+.side-pane
+  padding 20px 12px
+
+  .group-wrapper
+    margin-bottom 10px
+
+    .title
+      font-size 22px
+      font-weight 500
+      color $darkerMainColor
+
+    .item
+      font-size 13px
+      font-weight 500
+      color white
+      padding 10px 0 10px 8px
+
+.right.side-pane
+  padding-right 30px
+
+  .group-wrapper
+    .title
+      color $darkGrayColor
+
+    .item
+      display flex
+
+      .number
+        width 30px
+        color $darkGrayColor
+        font-size 20px
+        margin-top -3px
+
+      .text
+        flex 1
+
+        .tag
+          color $darkGrayColor
+
+        .description
+          color white

@@ -1,0 +1,28 @@
+schema {
+  query: RootQueryType
+  mutation: RootMutationType
+}
+type Article {
+  _id: ID
+  title: String
+}
+type Comment {
+  _id: ID
+  comment: String
+  ower: User
+}
+type RootMutationType {
+  insertArticle(_id: String!, title: String!): Article
+}
+type RootQueryType {
+  article(id: String!): Article
+  articles: [Article]
+  comment: Comment
+  ping: String
+  user: User
+}
+type User {
+  _id: ID
+  articles: [Article]
+  username: String
+}
