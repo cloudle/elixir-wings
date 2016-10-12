@@ -3,7 +3,7 @@ defmodule Schema.Types.Article do
 
   @desc "An article, e.g: post, tutorial episode"
   object :article do
-    field :_id, :id
+    field :id, :id ,do: resolve &Schema.Util.resolve_id/2
     field :title, :string
     field :content, :string
   end

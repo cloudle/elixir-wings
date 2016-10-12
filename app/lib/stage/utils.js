@@ -34,3 +34,13 @@ export function collectionDestroy (collection, instance) {
 
 	return [ ...headItems, ...tailItems ];
 }
+
+export function firstKeyOf(instance: Object, address?: string) {
+	let result = instance[Object.keys(instance)[0]];
+
+	if (address && result[address]) {
+		return result[address]
+	} else {
+		return result;
+	}
+}

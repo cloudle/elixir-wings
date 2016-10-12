@@ -3,7 +3,7 @@ defmodule Schema.Types.User do
 
   @desc "User's main record (without profile)"
   object :user do
-    field :_id, :id
+    field :id, :id ,do: resolve &Schema.Util.resolve_id/2
     field :username, :string
     field :articles, list_of(:article) do
       resolve fn _args, _ ->

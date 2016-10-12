@@ -3,7 +3,7 @@ defmodule Schema.Types.Comment do
 
   @desc "User's comment - with parent and child hierachy"
   object :comment do
-    field :_id, :id
+    field :id, :id ,do: resolve &Schema.Util.resolve_id/2
     field :comment, :string
     field :ower, :user do
       resolve fn _, _ ->

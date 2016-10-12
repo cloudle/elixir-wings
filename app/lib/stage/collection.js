@@ -5,6 +5,8 @@ import * as debug from '../debug';
 import type { Wire } from '../wire';
 import { execute } from '../wire';
 import type { Store } from '../stage';
+import { firstKeyOf } from './utils';
+
 import {
 	CollectionInsert,
 	CollectionMutate,
@@ -13,7 +15,7 @@ import {
 
 type CollectionOptions = {
 	insertGraph?: string,
-	mutationGraph?: string,
+	updateGraph?: string,
 	destroyGraph?: string,
 }
 
@@ -45,12 +47,14 @@ export class Collection {
 		return insert(this.store, this.wire, this.collectionName, instance, insertGraph);
 	}
 
-	mutate (instance: any) {
-		return mutate(this.store, this.wire, this.collectionName, instance);
+	update (instance: any, graphQuery?: string) {
+		let updateGraph = graphQuery || this.options.updateGraph;
+		return mutate(this.store, this.wire, this.collectionName, instance, updateGraph);
 	}
 
-	destroy (instance: any) {
-		return destroy(this.store, this.wire, this.collectionName, instance);
+	destroy (instance: any, graphQuery?: string) {
+		let destroyGraph = graphQuery || this.options.destroyGraph;
+		return destroy(this.store, this.wire, this.collectionName, instance, destroyGraph);
 	}
 }
 
@@ -80,9 +84,10 @@ export function insert (store: Store, wire: Wire, collection: string, instance: 
 			if (response.errors) {
 				store.dispatch({type: CollectionDestroy, collection, instance});
 			} else {
+				let liveItem = firstKeyOf(response.data);
 				store.dispatch({
 					type: CollectionMutate, collection,
-					instance: { ...instance, ...response.data.insertArticle }
+					instance: { ...instance, ...liveItem }
 				});
 			}
 		});
@@ -91,20 +96,7 @@ export function insert (store: Store, wire: Wire, collection: string, instance: 
 	return instance.id;
 }
 
-export function destroy (store: Store, wire: Wire, collection: string, instance: Object) {
-
-	/*Script: TODO: Implement this
-	* 1. Destroy the item, backup it in local variable (of current lexical scope)
-	* 2. Execute the destroy query to server, get result and merge it with the store
-	*     - Success case, just let it as it is
-	*     - Failure case, bring it back using local variable stored before
-	* 3.
-	* */
-
-	store.dispatch({type: CollectionDestroy, collection, instance});
-}
-
-export function mutate (store: Store, wire: Wire, collection: string, instance: Object) {
+export function mutate (store: Store, wire: Wire, collection: string, instance: any, graphQuery?: string) {
 
 	/*Script: TODO: Implement this
 	 * 1. Merge the item with the existing one, backup original state in local variable (of current lexical scope)
@@ -115,6 +107,43 @@ export function mutate (store: Store, wire: Wire, collection: string, instance: 
 	 * */
 
 	store.dispatch({type: CollectionMutate, collection, instance});
+
+	if (graphQuery) {
+		execute(wire, graphQuery, instance, response => {
+			debugResponse(response);
+
+			if (response.errors) {
+				store.dispatch({type: CollectionMutate, collection, instance});
+			} else {
+				let liveInstance = firstKeyOf(response.data, 'payload');
+				store.dispatch({type: CollectionMutate, collection, instance: liveInstance});
+			}
+		});
+	}
+
+	return instance.id;
+}
+
+export function destroy (store: Store, wire: Wire, collection: string, instance: Object, graphQuery?: string) {
+
+	/*Script: TODO: Implement this
+	* 1. Destroy the item, backup it in local variable (of current lexical scope)
+	* 2. Execute the destroy query to server, get result and merge it with the store
+	*     - Success case, just let it as it is
+	*     - Failure case, bring it back using local variable stored before
+	* 3.
+	* */
+
+	store.dispatch({type: CollectionDestroy, collection, instance});
+	execute(wire, graphQuery, instance, response => {
+		debugResponse(response);
+		console.log(response);
+		if (response.errors) {
+			store.dispatch({type: CollectionInsert, collection, instance});
+		}
+	});
+
+	return instance.id;
 }
 
 type GraphQlResponse = {

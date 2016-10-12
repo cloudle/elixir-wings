@@ -5,6 +5,8 @@ defmodule Schema do
   import_types Schema.Types.User
   import_types Schema.Types.Article
   import_types Schema.Types.Comment
+  import_types Schema.Interfaces.Mutation
+  import_types Schema.Interfaces.Node
 
   default_resolve &Schema.Util.resolve/2
 
@@ -33,10 +35,22 @@ defmodule Schema do
 
   mutation do
     field :insert_article, :article do
-      arg :_id, non_null(:string)
+      arg :id, non_null(:id)
       arg :title, non_null(:string)
       arg :content, :string
       resolve &Resolver.Article.insert/2
+    end
+
+    field :update_article, :mutation_response do
+      arg :id, non_null(:id)
+      arg :title, :string
+      arg :content, :string
+      resolve &Resolver.Article.update/2
+    end
+
+    field :destroy_article, :mutation_response do
+      arg :id, non_null(:id)
+      resolve &Resolver.Article.destroy/2
     end
   end
 end
